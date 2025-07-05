@@ -1,5 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.util.*" %>
+<%@ page import="model.UserStats" %>
+<%@ page import="model.UserActivity" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -35,6 +37,12 @@
             userID = user.getUserID();
         }
         
+        // Get user statistics
+        UserStats userStats = userDAO.getUserStats(userID);
+        
+        // Get recent activities
+        List<UserActivity> recentActivities = userDAO.getUserRecentActivities(userID, 5);
+        
         // Generate user avatar initials
         String userInitials = "";
         if (userName != null && !userName.isEmpty()) {
@@ -63,7 +71,7 @@
                     <div class="user-avatar"><%= userInitials.toUpperCase() %></div>
                     <div>
                         <div class="user-name"><%= userName %></div>
-                        <small style="color: #666;"><%= userRole %></small>
+                        <div class="user-role-small"><%= userRole %></div>
                     </div>
                 </div>
                 <a href="profile.jsp" class="btn btn-profile">Hồ sơ</a>
@@ -125,12 +133,16 @@
                     
                     <div class="profile-stats">
                         <div class="stat-item">
-                            <div class="stat-number">5</div>
+                            <div class="stat-number"><%= userStats.getTotalTrips() %></div>
                             <div class="stat-label">Chuyến đi</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-number">4.8</div>
+                            <div class="stat-number"><%= String.format("%.1f", userStats.getAverageRating()) %></div>
                             <div class="stat-label">Đánh giá</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number"><%= String.format("%.0f", userStats.getTotalSpent() / 1000000) %></div>
+                            <div class="stat-label">Triệu VNĐ</div>
                         </div>
                     </div>
                 </div>
@@ -178,35 +190,35 @@
             <!-- Recent Activity -->
             <div class="recent-activity fade-in-up">
                 <h3 class="activity-title">Hoạt động gần đây</h3>
-                <div class="activity-item">
-                    <div class="activity-icon">🚗</div>
-                    <div class="activity-content">
-                        <div class="activity-text">Thuê xe Toyota Vios</div>
-                        <div class="activity-time">2 giờ trước</div>
+                <%
+                    if (recentActivities.isEmpty()) {
+                %>
+                    <div class="no-activity">
+                        <p>Chưa có hoạt động nào</p>
                     </div>
-                </div>
-                <div class="activity-item">
-                    <div class="activity-icon">⭐</div>
-                    <div class="activity-content">
-                        <div class="activity-text">Đánh giá xe Honda Lead</div>
-                        <div class="activity-time">1 ngày trước</div>
+                <%
+                    } else {
+                        for (UserActivity activity : recentActivities) {
+                %>
+                    <div class="activity-item">
+                        <div class="activity-icon"><%= activity.getActivityIcon() %></div>
+                        <div class="activity-content">
+                            <div class="activity-text"><%= activity.getDescription() %></div>
+                            <div class="activity-time"><%= activity.getTimeAgo() %></div>
+                        </div>
                     </div>
-                </div>
-                <div class="activity-item">
-                    <div class="activity-icon">📝</div>
-                    <div class="activity-content">
-                        <div class="activity-text">Cập nhật thông tin cá nhân</div>
-                        <div class="activity-time">3 ngày trước</div>
-                    </div>
-                </div>
+                <%
+                        }
+                    }
+                %>
             </div>
         </div>
     </section>
 
     <!-- Password Change Modal -->
-    <div id="passwordModal" class="modal" style="display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
-        <div class="modal-content" style="background: white; margin: 15% auto; padding: 2rem; border-radius: 20px; width: 90%; max-width: 500px;">
-            <h3 style="margin-bottom: 1.5rem; text-align: center;">Đổi mật khẩu</h3>
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <h3>Đổi mật khẩu</h3>
             <form action="changePassword" method="post">
                 <div class="form-group">
                     <label for="current_password" class="form-label">Mật khẩu hiện tại</label>
@@ -220,9 +232,9 @@
                     <label for="confirm_new_password" class="form-label">Xác nhận mật khẩu mới</label>
                     <input type="password" id="confirm_new_password" name="confirm_new_password" class="form-input" required>
                 </div>
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                    <button type="submit" class="btn-update" style="flex: 1;">Đổi mật khẩu</button>
-                    <button type="button" class="btn-logout" style="flex: 1;" onclick="hidePasswordModal()">Hủy</button>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-update">Đổi mật khẩu</button>
+                    <button type="button" class="btn-logout" onclick="hidePasswordModal()">Hủy</button>
                 </div>
             </form>
         </div>

@@ -2,9 +2,14 @@ package dao;
 
 import database.DBConnect;
 import model.User;
+import model.UserStats;
+import model.UserActivity;
 import controller.RegisterServlet;
 
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -236,6 +241,142 @@ public class UserDAO {
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error changing password", e);
             return false;
+        }
+    }
+    
+    // Lấy thống kê của user
+    public static UserStats getUserStats(Long userID) {
+        ensureConnection();
+
+        if (connection == null) {
+            LOGGER.severe("Không thể kết nối CSDL!");
+            return new UserStats(0, 0.0, 0, 0.0);
+        }
+
+        try {
+            // Lấy tổng số chuyến đi
+            String tripsSql = "SELECT COUNT(*) as total_trips FROM RentalOrders WHERE user_id = ? AND status = 'completed'";
+            int totalTrips = 0;
+            try (PreparedStatement stmt = connection.prepareStatement(tripsSql)) {
+                stmt.setLong(1, userID);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    totalTrips = rs.getInt("total_trips");
+                }
+            }
+
+            // Lấy điểm đánh giá trung bình và tổng số đánh giá
+            String ratingSql = "SELECT AVG(rating) as avg_rating, COUNT(*) as total_reviews FROM Reviews WHERE user_id = ?";
+            double averageRating = 0.0;
+            int totalReviews = 0;
+            try (PreparedStatement stmt = connection.prepareStatement(ratingSql)) {
+                stmt.setLong(1, userID);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    averageRating = rs.getDouble("avg_rating");
+                    totalReviews = rs.getInt("total_reviews");
+                }
+            }
+
+            // Lấy tổng tiền đã chi
+            String spentSql = "SELECT SUM(p.amount) as total_spent FROM Payments p " +
+                            "JOIN RentalOrders r ON p.order_id = r.order_id " +
+                            "WHERE r.user_id = ? AND p.status = 'success'";
+            double totalSpent = 0.0;
+            try (PreparedStatement stmt = connection.prepareStatement(spentSql)) {
+                stmt.setLong(1, userID);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    totalSpent = rs.getDouble("total_spent");
+                }
+            }
+
+            LOGGER.info("Stats retrieved for user ID " + userID + ": trips=" + totalTrips + 
+                       ", rating=" + averageRating + ", reviews=" + totalReviews + ", spent=" + totalSpent);
+            
+            return new UserStats(totalTrips, averageRating, totalReviews, totalSpent);
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving user stats", e);
+            return new UserStats(0, 0.0, 0, 0.0);
+        }
+    }
+    
+    // Lấy hoạt động gần đây của user
+    public static List<UserActivity> getUserRecentActivities(Long userID, int limit) {
+        ensureConnection();
+
+        if (connection == null) {
+            LOGGER.severe("Không thể kết nối CSDL!");
+            return new ArrayList<>();
+        }
+
+        List<UserActivity> activities = new ArrayList<>();
+
+        try {
+            // Lấy hoạt động thuê xe
+            String rentalSql = "SELECT r.order_id, r.start_time, v.vehicle_name " +
+                             "FROM RentalOrders r " +
+                             "JOIN Vehicles v ON r.vehicle_id = v.vehicle_id " +
+                             "WHERE r.user_id = ? AND r.status = 'completed' " +
+                             "ORDER BY r.start_time DESC LIMIT ?";
+            
+            try (PreparedStatement stmt = connection.prepareStatement(rentalSql)) {
+                stmt.setLong(1, userID);
+                stmt.setInt(2, limit);
+                ResultSet rs = stmt.executeQuery();
+                
+                while (rs.next()) {
+                    UserActivity activity = new UserActivity();
+                    activity.setActivityId(rs.getInt("order_id"));
+                    activity.setUserId(userID.intValue());
+                    activity.setActivityType("rental");
+                    activity.setDescription("Thuê xe " + rs.getString("vehicle_name"));
+                    activity.setActivityTime(rs.getTimestamp("start_time").toLocalDateTime());
+                    activity.setVehicleName(rs.getString("vehicle_name"));
+                    activities.add(activity);
+                }
+            }
+
+            // Lấy hoạt động đánh giá
+            String reviewSql = "SELECT r.review_id, r.review_time, r.rating, v.vehicle_name " +
+                             "FROM Reviews r " +
+                             "JOIN Vehicles v ON r.vehicle_id = v.vehicle_id " +
+                             "WHERE r.user_id = ? " +
+                             "ORDER BY r.review_time DESC LIMIT ?";
+            
+            try (PreparedStatement stmt = connection.prepareStatement(reviewSql)) {
+                stmt.setLong(1, userID);
+                stmt.setInt(2, limit);
+                ResultSet rs = stmt.executeQuery();
+                
+                while (rs.next()) {
+                    UserActivity activity = new UserActivity();
+                    activity.setActivityId(rs.getInt("review_id"));
+                    activity.setUserId(userID.intValue());
+                    activity.setActivityType("review");
+                    activity.setDescription("Đánh giá xe " + rs.getString("vehicle_name"));
+                    activity.setActivityTime(rs.getTimestamp("review_time").toLocalDateTime());
+                    activity.setVehicleName(rs.getString("vehicle_name"));
+                    activity.setRating(rs.getInt("rating"));
+                    activities.add(activity);
+                }
+            }
+
+            // Sắp xếp theo thời gian (mới nhất trước)
+            activities.sort((a1, a2) -> a2.getActivityTime().compareTo(a1.getActivityTime()));
+
+            // Giới hạn số lượng kết quả
+            if (activities.size() > limit) {
+                activities = activities.subList(0, limit);
+            }
+
+            LOGGER.info("Recent activities retrieved for user ID " + userID + ": " + activities.size() + " activities");
+            return activities;
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving user activities", e);
+            return new ArrayList<>();
         }
     }
 }
