@@ -1,3 +1,5 @@
+/* ===== STYLES CHUNG CHO TOÀN BỘ WEBSITE ===== */
+
 /* Reset và thiết lập cơ bản */
 * {
     margin: 0;
@@ -6,175 +8,228 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-/* Container chính cho form */
-form {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 40px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    margin: 20px auto;
-}
-
-/* Form register rộng hơn */
-body:has(form[action="register"]) form,
-form[action="register"] {
-    max-width: 500px;
-}
-
-form:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-}
-
-/* Styling cho label */
-label {
-    display: block;
-    margin-bottom: 6px;
-    margin-top: 12px;
-    font-weight: 600;
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
     color: #333;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    overflow-x: hidden;
 }
 
-/* Label cho login form */
-form[action="login"] label {
-    margin-bottom: 8px;
-    font-size: 14px;
-}
-
-/* Styling cho input */
-input[type="text"],
-input[type="email"],
-input[type="password"] {
+/* ===== NAVBAR STYLES ===== */
+.navbar {
+    background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+    padding: 1rem 0;
+    position: fixed;
     width: 100%;
-    padding: 12px 15px;
-    margin-bottom: 8px;
-    border: 2px solid #e1e8ed;
-    border-radius: 10px;
-    font-size: 15px;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.9);
-    outline: none;
 }
 
-/* Input cho login form */
-form[action="login"] input[type="email"],
-form[action="login"] input[type="password"] {
-    padding: 15px;
-    margin-bottom: 20px;
-    font-size: 16px;
+.navbar.scrolled {
+    background: rgba(245, 245, 245, 0.95);
+    backdrop-filter: blur(10px);
 }
 
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    transform: translateY(-1px);
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
 }
 
-input[type="text"]:hover,
-input[type="email"]:hover,
-input[type="password"]:hover {
-    border-color: #764ba2;
+.logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+    transition: transform 0.3s ease;
 }
 
-/* Styling đặc biệt cho địa chỉ */
-input[name="address"] {
-    min-height: 45px;
-    resize: vertical;
+.logo:hover {
+    transform: scale(1.05);
 }
 
-/* Styling cho submit button và button */
-input[type="submit"],
-button {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: #333;
+    text-decoration: none;
     transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-top: 20px;
+    position: relative;
 }
 
-/* Button cho register form */
-form[action="register"] button {
-    margin-top: 20px;
-}
-
-/* Button cho login form */
-form[action="login"] input[type="submit"] {
-    margin-top: 10px;
-}
-
-input[type="submit"]:hover,
-button:hover {
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+.nav-links a:hover {
+    color: #666;
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
 }
 
-input[type="submit"]:active,
-button:active {
-    transform: translateY(0);
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #666;
+    transition: width 0.3s ease;
 }
 
-input[type="submit"]:focus,
-button:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+.nav-links a:hover::after {
+    width: 100%;
 }
 
-/* Styling cho thông báo lỗi (login) */
-#error {
-    color: #e74c3c;
-    font-size: 14px;
-    text-align: center;
-    margin-top: 20px;
-    padding: 12px;
-    background: rgba(231, 76, 60, 0.1);
-    border-radius: 8px;
-    border-left: 4px solid #e74c3c;
+.auth-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* ===== BUTTON STYLES ===== */
+.btn {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
     font-weight: 500;
 }
 
-/* Validation styling */
-input:invalid {
-    border-color: #e74c3c;
+.btn-login {
+    background: transparent;
+    color: #333;
+    border: 2px solid #333;
 }
 
-input:valid {
-    border-color: #27ae60;
+.btn-login:hover {
+    background: #333;
+    color: white;
+    transform: translateY(-2px);
 }
 
-/* Hiệu ứng animation cho form khi load */
-form {
-    animation: slideIn 0.6s ease-out;
+.btn-register {
+    background: #666;
+    color: white;
 }
 
-@keyframes slideIn {
+.btn-register:hover {
+    background: #555;
+    transform: translateY(-2px);
+}
+
+.btn-logout {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-logout:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
+.btn-profile {
+    background: #28a745;
+    color: white;
+}
+
+.btn-profile:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+/* ===== USER INFO STYLES ===== */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 25px;
+    border: 2px solid #e8e8e8;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    background: #666;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.user-name {
+    font-weight: 500;
+    color: #333;
+}
+
+/* ===== FORM STYLES ===== */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.form-input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e8e8e8;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #666;
+    box-shadow: 0 0 20px rgba(102, 102, 102, 0.2);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* ===== MESSAGE STYLES ===== */
+.success-message {
+    background: #e8f5e8;
+    color: #2e7d32;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    border: 1px solid #a5d6a7;
+    text-align: center;
+}
+
+.error-message {
+    background: #ffebee;
+    color: #c62828;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    border: 1px solid #ffcdd2;
+    text-align: center;
+}
+
+/* ===== ANIMATION STYLES ===== */
+@keyframes fadeInUp {
     from {
         opacity: 0;
         transform: translateY(30px);
@@ -185,122 +240,56 @@ form {
     }
 }
 
-/* Responsive design */
-@media (max-width: 600px) {
-    form {
-        padding: 25px 20px;
-        margin: 10px;
-        max-width: 95%;
+.fade-in-up {
+    animation: fadeInUp 0.8s ease;
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
     }
-
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="submit"],
-    button {
-        padding: 12px;
-        font-size: 14px;
+    
+    .user-info {
+        flex-direction: column;
+        gap: 0.5rem;
     }
-
-    label {
-        font-size: 12px;
+    
+    .auth-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
     }
-}
-
-@media (max-width: 400px) {
-    form {
-        padding: 20px 15px;
-    }
-
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="submit"],
-    button {
-        padding: 10px;
-        font-size: 13px;
-    }
-}
-
-/* Placeholder styling */
-input::placeholder {
-    color: #999;
-    opacity: 0.7;
-    font-style: italic;
-}
-
-/* Thêm icon cho các input email và password */
-input[type="email"] {
-    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 18px;
-    padding-right: 40px;
-    opacity: 0.7;
-}
-
-input[type="password"] {
-    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><circle cx="12" cy="16" r="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 18px;
-    padding-right: 40px;
-    opacity: 0.7;
-}
-
-input[type="email"]:focus,
-input[type="password"]:focus {
-    opacity: 1;
-}
-
-/* Hiệu ứng loading cho button */
-input[type="submit"]:disabled,
-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* Thêm style cho title */
-h1, h2, title {
-    text-align: center;
-    color: #333;
-    margin-bottom: 30px;
-    font-size: 24px;
-    font-weight: 700;
-}
-
-/* Grid layout cho form register trên màn hình lớn */
-@media (min-width: 768px) {
-    form[action="register"] {
-        max-width: 600px;
-    }
-
+    
     .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-    }
-
-    .form-row input {
-        margin-bottom: 0;
+        grid-template-columns: 1fr;
     }
 }
 
-/* Styling đặc biệt cho số CCCD và phone */
-input[name="identity_number"],
-input[name="phone_number"] {
-    font-family: 'Courier New', monospace;
-    letter-spacing: 1px;
+/* ===== CONTAINER STYLES ===== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
 }
 
-/* Thêm hiệu ứng cho focus login form */
-form[action="login"] input[type="email"]:focus,
-form[action="login"] input[type="password"]:focus {
-    transform: translateY(-2px);
+/* ===== SECTION STYLES ===== */
+.section-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
 }
 
-/* Đảm bảo form login có hover effect mạnh hơn */
-form[action="login"]:hover {
-    transform: translateY(-5px);
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-radius: 2px;
 }
