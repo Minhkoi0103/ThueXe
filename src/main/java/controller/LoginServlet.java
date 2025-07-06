@@ -53,10 +53,13 @@ public class LoginServlet extends HttpServlet {
                     session.setAttribute("userName", user.getUserName());
                     session.setAttribute("userRole", user.getUserRole());
                     session.setAttribute("userID", user.getUserID());
-                    
                     LOGGER.info("Session created for user: " + user.getUserName() + " (ID: " + user.getUserID() + ")");
+                    // Chuyển hướng theo vai trò
+                    if (user.getUserRole() != null && user.getUserRole().equalsIgnoreCase("admin")) {
+                        resp.sendRedirect("admin/dashboard.jsp");
+                        return;
+                    }
                 }
-                
                 resp.sendRedirect("index.jsp");
             } else {
                 LOGGER.warning("Login failed for email: " + email);

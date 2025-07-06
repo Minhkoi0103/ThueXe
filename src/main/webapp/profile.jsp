@@ -1,7 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.util.*" %>
-<%@ page import="model.UserStats" %>
-<%@ page import="model.UserActivity" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -12,6 +10,7 @@
     <title>Hồ sơ - VehicleRent</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/profile.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <%
@@ -37,11 +36,13 @@
             userID = user.getUserID();
         }
         
-        // Get user statistics
-        UserStats userStats = userDAO.getUserStats(userID);
+        // Get user statistics from database
+        dao.UserStatsDAO userStatsDAO = new dao.UserStatsDAO();
+        model.UserStats userStats = userStatsDAO.getUserStats(userID.intValue());
         
-        // Get recent activities
-        List<UserActivity> recentActivities = userDAO.getUserRecentActivities(userID, 5);
+        // Get recent activities from database
+        dao.UserActivityDAO userActivityDAO = new dao.UserActivityDAO();
+        java.util.List<model.UserActivity> recentActivities = userActivityDAO.getRecentActivities(userID.intValue(), 5);
         
         // Generate user avatar initials
         String userInitials = "";
@@ -71,7 +72,7 @@
                     <div class="user-avatar"><%= userInitials.toUpperCase() %></div>
                     <div>
                         <div class="user-name"><%= userName %></div>
-                        <div class="user-role-small"><%= userRole %></div>
+                        <small style="color: #666;"><%= userRole %></small>
                     </div>
                 </div>
                 <a href="profile.jsp" class="btn btn-profile">Hồ sơ</a>
@@ -80,161 +81,304 @@
         </div>
     </nav>
 
-    <!-- Profile Section -->
-    <section class="profile-section">
-        <div class="profile-container">
-            <div class="profile-header fade-in-up">
-                <h1 class="profile-title">Hồ sơ cá nhân</h1>
-                <p class="profile-subtitle">Quản lý thông tin tài khoản của bạn</p>
-            </div>
-
-            <%
-                String success = request.getParameter("success");
-                String error = request.getParameter("error");
-                if (success != null && success.equals("1")) {
-            %>
-                <div class="success-message fade-in-up">
-                    Cập nhật thông tin thành công!
+    <!-- Main Content -->
+    <main class="profile-main">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-background"></div>
+            <div class="hero-content">
+                <div class="hero-avatar">
+                    <div class="avatar-circle">
+                        <span class="avatar-text"><%= userInitials.toUpperCase() %></span>
+                    </div>
                 </div>
-            <%
-                }
-                if (error != null) {
-                    String errorMessage = "";
-                    switch (error) {
-                        case "update_failed":
-                            errorMessage = "Có lỗi xảy ra khi cập nhật thông tin!";
-                            break;
-                        case "password_mismatch":
-                            errorMessage = "Mật khẩu xác nhận không khớp!";
-                            break;
-                        case "invalid_password":
-                            errorMessage = "Mật khẩu hiện tại không đúng!";
-                            break;
-                        default:
-                            errorMessage = "Có lỗi xảy ra. Vui lòng thử lại!";
-                            break;
+                <div class="hero-info">
+                    <h1 class="hero-name"><%= userName %></h1>
+                    <p class="hero-role"><%= userRole.equals("admin") ? "Quản trị viên" : "Khách hàng" %></p>
+                    <p class="hero-email"><i class="fas fa-envelope"></i> <%= userEmail %></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Messages Section -->
+        <section class="messages-section">
+            <div class="container">
+                <%
+                    String success = request.getParameter("success");
+                    String error = request.getParameter("error");
+                    if (success != null && success.equals("1")) {
+                %>
+                    <div class="message success-message" role="alert" aria-live="polite">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Cập nhật thông tin thành công!</span>
+                    </div>
+                <%
                     }
-            %>
-                <div class="error-message fade-in-up">
-                    <%= errorMessage %>
-                </div>
-            <%
-                }
-            %>
-
-            <div class="profile-grid">
-                <!-- Profile Card -->
-                <div class="profile-card fade-in-up">
-                    <div class="profile-avatar-large">
-                        <%= userInitials.toUpperCase() %>
-                    </div>
-                    <h2 class="profile-name"><%= userName %></h2>
-                    <div class="profile-role"><%= userRole.equals("admin") ? "Quản trị viên" : "Khách hàng" %></div>
-                    
-                    <div class="profile-stats">
-                        <div class="stat-item">
-                            <div class="stat-number"><%= userStats.getTotalTrips() %></div>
-                            <div class="stat-label">Chuyến đi</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number"><%= String.format("%.1f", userStats.getAverageRating()) %></div>
-                            <div class="stat-label">Đánh giá</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number"><%= String.format("%.0f", userStats.getTotalSpent() / 1000000) %></div>
-                            <div class="stat-label">Triệu VNĐ</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Profile Form -->
-                <div class="profile-form fade-in-up">
-                    <h3 class="form-title">Thông tin cá nhân</h3>
-                    <form action="updateProfile" method="post">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="user_name" class="form-label">Họ và tên</label>
-                                <input type="text" id="user_name" name="user_name" class="form-input" value="<%= userName %>" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" id="email" name="email" class="form-input" value="<%= userEmail %>" disabled>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="phone_number" class="form-label">Số điện thoại</label>
-                                <input type="tel" id="phone_number" name="phone_number" class="form-input" value="<%= user != null ? user.getPhoneNumber() : "" %>" placeholder="Nhập số điện thoại">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="identity_number" class="form-label">CCCD</label>
-                                <input type="text" id="identity_number" name="identity_number" class="form-input" value="<%= user != null ? user.getIdentityNumber() : "" %>" placeholder="Nhập CCCD">
-                            </div>
-
-                            <div class="form-group full-width">
-                                <label for="address" class="form-label">Địa chỉ</label>
-                                <input type="text" id="address" name="address" class="form-input" value="<%= user != null ? user.getAddress() : "" %>" placeholder="Nhập địa chỉ">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn-update">Cập nhật thông tin</button>
-                    </form>
-
-                    <button type="button" class="btn-change-password" onclick="showPasswordModal()">
-                        🔒 Đổi mật khẩu
-                    </button>
-                </div>
-            </div>
-
-            <!-- Recent Activity -->
-            <div class="recent-activity fade-in-up">
-                <h3 class="activity-title">Hoạt động gần đây</h3>
-                <%
-                    if (recentActivities.isEmpty()) {
-                %>
-                    <div class="no-activity">
-                        <p>Chưa có hoạt động nào</p>
-                    </div>
-                <%
-                    } else {
-                        for (UserActivity activity : recentActivities) {
-                %>
-                    <div class="activity-item">
-                        <div class="activity-icon"><%= activity.getActivityIcon() %></div>
-                        <div class="activity-content">
-                            <div class="activity-text"><%= activity.getDescription() %></div>
-                            <div class="activity-time"><%= activity.getTimeAgo() %></div>
-                        </div>
-                    </div>
-                <%
+                    if (error != null) {
+                        String errorMessage = "";
+                        switch (error) {
+                            case "update_failed":
+                                errorMessage = "Có lỗi xảy ra khi cập nhật thông tin!";
+                                break;
+                            case "password_mismatch":
+                                errorMessage = "Mật khẩu xác nhận không khớp!";
+                                break;
+                            case "invalid_password":
+                                errorMessage = "Mật khẩu hiện tại không đúng!";
+                                break;
+                            default:
+                                errorMessage = "Có lỗi xảy ra. Vui lòng thử lại!";
+                                break;
                         }
+                %>
+                    <div class="message error-message" role="alert" aria-live="polite">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span><%= errorMessage %></span>
+                    </div>
+                <%
                     }
                 %>
             </div>
-        </div>
-    </section>
+        </section>
+
+        <!-- Content Grid -->
+        <section class="content-section">
+            <div class="container">
+                <div class="content-grid">
+                    <!-- Left Column -->
+                    <div class="left-column">
+                        <!-- Stats Cards -->
+                        <div class="stats-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-chart-bar"></i>
+                                Thống kê cá nhân
+                            </h2>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-car"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-number"><%= userStats.getTotalRentals() %></div>
+                                        <div class="stat-label">Chuyến đi</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-number"><%= String.format("%.1f", userStats.getAverageRating()) %></div>
+                                        <div class="stat-label">Đánh giá TB</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-comment"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-number"><%= userStats.getTotalReviews() %></div>
+                                        <div class="stat-label">Đánh giá</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-wallet"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-number"><%= String.format("%.0f", userStats.getTotalSpent() / 1000000) %>M</div>
+                                        <div class="stat-label">Đã chi</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Profile Form -->
+                        <div class="profile-form-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-user-edit"></i>
+                                Thông tin cá nhân
+                            </h2>
+                            <form action="updateProfile" method="post" class="profile-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="user_name" class="form-label">
+                                            <i class="fas fa-user"></i>
+                                            Họ và tên
+                                        </label>
+                                        <input type="text" id="user_name" name="user_name" class="form-input" value="<%= userName %>" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email" class="form-label">
+                                            <i class="fas fa-envelope"></i>
+                                            Email
+                                        </label>
+                                        <input type="email" id="email" name="email" class="form-input" value="<%= userEmail %>" disabled>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="phone_number" class="form-label">
+                                            <i class="fas fa-phone"></i>
+                                            Số điện thoại
+                                        </label>
+                                        <input type="tel" id="phone_number" name="phone_number" class="form-input" value="<%= user != null ? user.getPhoneNumber() : "" %>" placeholder="Nhập số điện thoại">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="identity_number" class="form-label">
+                                            <i class="fas fa-id-card"></i>
+                                            CCCD
+                                        </label>
+                                        <input type="text" id="identity_number" name="identity_number" class="form-input" value="<%= user != null ? user.getIdentityNumber() : "" %>" placeholder="Nhập CCCD">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="address" class="form-label">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        Địa chỉ
+                                    </label>
+                                    <input type="text" id="address" name="address" class="form-input" value="<%= user != null ? user.getAddress() : "" %>" placeholder="Nhập địa chỉ">
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i>
+                                        Cập nhật thông tin
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="showPasswordModal()">
+                                        <i class="fas fa-lock"></i>
+                                        Đổi mật khẩu
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="right-column">
+                        <!-- Recent Activities -->
+                        <div class="activities-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-history"></i>
+                                Hoạt động gần đây
+                            </h2>
+                            <div class="activities-list">
+                                <%
+                                    if (recentActivities != null && !recentActivities.isEmpty()) {
+                                        for (model.UserActivity activity : recentActivities) {
+                                %>
+                                    <div class="activity-item">
+                                        <div class="activity-icon">
+                                            <i class="<%= activity.getActivityType().equals("rental") ? "fas fa-car" : "fas fa-star" %>"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-text"><%= activity.getDescription() %></div>
+                                            <div class="activity-time">
+                                                <i class="fas fa-clock"></i>
+                                                <%= userActivityDAO.getTimeAgo(activity.getActivityTime()) %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <%
+                                        }
+                                    } else {
+                                %>
+                                    <div class="empty-state">
+                                        <div class="empty-icon">
+                                            <i class="fas fa-inbox"></i>
+                                        </div>
+                                        <div class="empty-text">
+                                            <h3>Chưa có hoạt động nào</h3>
+                                            <p>Bắt đầu thuê xe để có hoạt động</p>
+                                        </div>
+                                    </div>
+                                <%
+                                    }
+                                %>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="quick-actions-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-bolt"></i>
+                                Thao tác nhanh
+                            </h2>
+                            <div class="quick-actions-grid">
+                                <a href="index.jsp#vehicles" class="quick-action-card">
+                                    <div class="quick-action-icon">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                    <div class="quick-action-text">Tìm xe</div>
+                                </a>
+                                <a href="index.jsp#booking" class="quick-action-card">
+                                    <div class="quick-action-icon">
+                                        <i class="fas fa-calendar-plus"></i>
+                                    </div>
+                                    <div class="quick-action-text">Đặt xe</div>
+                                </a>
+                                <a href="#" class="quick-action-card" onclick="showPasswordModal()">
+                                    <div class="quick-action-icon">
+                                        <i class="fas fa-key"></i>
+                                    </div>
+                                    <div class="quick-action-text">Đổi mật khẩu</div>
+                                </a>
+                                <a href="logout" class="quick-action-card">
+                                    <div class="quick-action-icon">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                    </div>
+                                    <div class="quick-action-text">Đăng xuất</div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <!-- Password Change Modal -->
-    <div id="passwordModal" class="modal">
+    <div id="passwordModal" class="modal" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
         <div class="modal-content">
-            <h3>Đổi mật khẩu</h3>
-            <form action="changePassword" method="post">
+            <div class="modal-header">
+                <h3 id="modalTitle">
+                    <i class="fas fa-lock"></i>
+                    Đổi mật khẩu
+                </h3>
+                <button type="button" class="close" onclick="hidePasswordModal()" aria-label="Đóng">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form action="changePassword" method="post" class="password-form">
                 <div class="form-group">
-                    <label for="current_password" class="form-label">Mật khẩu hiện tại</label>
+                    <label for="current_password" class="form-label">
+                        <i class="fas fa-key"></i>
+                        Mật khẩu hiện tại
+                    </label>
                     <input type="password" id="current_password" name="current_password" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label for="new_password" class="form-label">Mật khẩu mới</label>
+                    <label for="new_password" class="form-label">
+                        <i class="fas fa-lock"></i>
+                        Mật khẩu mới
+                    </label>
                     <input type="password" id="new_password" name="new_password" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label for="confirm_new_password" class="form-label">Xác nhận mật khẩu mới</label>
+                    <label for="confirm_new_password" class="form-label">
+                        <i class="fas fa-check-circle"></i>
+                        Xác nhận mật khẩu mới
+                    </label>
                     <input type="password" id="confirm_new_password" name="confirm_new_password" class="form-input" required>
                 </div>
                 <div class="modal-actions">
-                    <button type="submit" class="btn-update">Đổi mật khẩu</button>
-                    <button type="button" class="btn-logout" onclick="hidePasswordModal()">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Đổi mật khẩu
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="hidePasswordModal()">
+                        <i class="fas fa-times"></i>
+                        Hủy
+                    </button>
                 </div>
             </form>
         </div>
@@ -253,20 +397,47 @@
 
         // Password modal functions
         function showPasswordModal() {
-            document.getElementById('passwordModal').style.display = 'block';
+            const modal = document.getElementById('passwordModal');
+            modal.style.display = 'block';
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
         }
 
         function hidePasswordModal() {
-            document.getElementById('passwordModal').style.display = 'none';
+            const modal = document.getElementById('passwordModal');
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = 'auto';
         }
 
         // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('passwordModal');
             if (event.target == modal) {
-                modal.style.display = 'none';
+                hidePasswordModal();
             }
         }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                hidePasswordModal();
+            }
+        });
+
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
     </script>
 </body>
 </html> 

@@ -54,6 +54,14 @@ CREATE TABLE Reviews (
                          FOREIGN KEY (vehicle_id) REFERENCES Vehicles(vehicle_id)
 );
 
+CREATE TABLE VehicleImages (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    vehicle_id INT NOT NULL,
+    image_url VARCHAR(255) NOT NULL,
+    image_index INT NOT NULL, -- 0: ảnh đại diện, 1-4: ảnh phụ
+    FOREIGN KEY (vehicle_id) REFERENCES Vehicles(vehicle_id)
+);
+
 -- Insert sample data
 INSERT INTO Users (user_name, user_email, phone_number, identity_number, address, user_password, user_role) VALUES
 ('Nguyễn Văn An', 'an.nguyen@email.com', '0123456789', '123456789012', '123 Đường ABC, Quận 1, TP.HCM', 'hashed_password_1', 'customer'),
